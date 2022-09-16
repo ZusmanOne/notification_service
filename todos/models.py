@@ -4,9 +4,9 @@ import pytz
 
 
 class Distribution(models.Model):
-    date_start = models.DateTimeField(auto_now_add=True,db_index=True, verbose_name='Время начала рассылки')
+    date_start = models.DateTimeField(db_index=True, verbose_name='Время начала рассылки')
     body = models.TextField(verbose_name='текст сообщения')
-    date_finish = models.DateTimeField(auto_now=True, db_index=True, verbose_name='Время окончания рассылки')
+    date_finish = models.DateTimeField(db_index=True, verbose_name='Время окончания рассылки')
     tag = models.CharField(max_length=100, verbose_name='тэг клиента')
     code_provider = models.IntegerField(verbose_name='Код оператора клиента')
 
@@ -52,7 +52,7 @@ class Message(models.Model):
         default='NOT SENT',
         verbose_name='Статус сообщения')
     distribution = models.ForeignKey(Distribution, on_delete=models.CASCADE, related_name='message')
-    client = models.ManyToManyField(Client, on_delete=models.CASCADE, related_name='messages')
+    client = models.ManyToManyField(Client, related_name='messages')
 
     def __str__(self):
         return f'Message -{self.pk}'
