@@ -47,7 +47,7 @@ class Message(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, db_index=True, verbose_name='Дата создания')
     status_send = models.CharField(
         max_length=30,
-        choices= STATUS_SEND,
+        choices=STATUS_SEND,
         db_index=True,
         default='NOT SENT',
         verbose_name='Статус сообщения')

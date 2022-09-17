@@ -9,8 +9,6 @@ class ClientSerializer(serializers.ModelSerializer):
 
 
 class DistributionSerializer(serializers.ModelSerializer):
-    message = serializers.StringRelatedField(many=True)
-
     class Meta:
         model = Distribution
         fields = '__all__'
