@@ -4,6 +4,10 @@ from .serializers import ClientSerializer, DistributionSerializer, MessageSerial
 from .models import Distribution, Client, Message
 from rest_framework.decorators import action
 from rest_framework.decorators import api_view
+from django.dispatch import receiver
+from django.db.models.signals import post_save
+from django.utils import timezone
+from .tasks import create_message
 
 
 class ClienList(generics.ListCreateAPIView):
@@ -54,3 +58,22 @@ def general_statistic(request):
         info_messages.append(distribution_info)
     general_statistic['distribution statistics'] = info_messages
     return Response(general_statistic)
+
+
+def send_message(distribution):
+    now_time = timezone.now()
+    clients = Client.objects.filter(code_provider=distribution.code_provider,tag=distribution.tag)
+    if  distribution.date_start < now_time < distribution.date_finish:
+        new_message = Message.objects.create(
+            distribution_id=distribution.pk,
+        )
+        new_message.client.set(clients)
+    if distribution.date_start >= now_time:
+        create_message.apply_async((distribution.code_provider, distribution.tag, distribution.pk),
+                                        eta=distribution.date_start, expires=distribution.date_finish)
+
+
+@receiver(post_save,sender=Distribution)
+def create_distribution(sender, instance, created, **kwargs):
+    if created:
+        send_message(instance)

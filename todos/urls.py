@@ -9,7 +9,7 @@ urlpatterns = router.urls
 urlpatterns += [
     path('clients/', views.ClienList.as_view(), name='client-list'),
     path('clients/<int:pk>/', views.ClientDetail.as_view(), name='clien-detail'),
-    path('statistic/', views.general_statistic),
+    path('statistic/', views.general_statistic, name='statistic'),
 
 
 ]
