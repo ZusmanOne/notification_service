@@ -62,18 +62,23 @@ def general_statistic(request):
 
 def send_message(distribution):
     now_time = timezone.now()
-    clients = Client.objects.filter(code_provider=distribution.code_provider,tag=distribution.tag)
-    if  distribution.date_start < now_time < distribution.date_finish:
-        new_message = Message.objects.create(
-            distribution_id=distribution.pk,
-        )
-        new_message.client.set(clients)
+    if distribution.date_start < now_time < distribution.date_finish:
+        create_message.apply_async((distribution.code_provider, distribution.tag, distribution.pk))
     if distribution.date_start >= now_time:
         create_message.apply_async((distribution.code_provider, distribution.tag, distribution.pk),
-                                        eta=distribution.date_start, expires=distribution.date_finish)
+                                   eta=distribution.date_start, expires=distribution.date_finish)
 
 
-@receiver(post_save,sender=Distribution)
+@receiver(post_save, sender=Distribution)
 def create_distribution(sender, instance, created, **kwargs):
     if created:
+        print(instance.pk)
+        data = {}
         send_message(instance)
+        for mailing in instance.message.all():
+            for client in mailing.client.all():
+                data['phone_number']= client.phone_number
+                data['message_id'] = mailing.pk
+                data['text'] = instance.message
+        print(data)
+
