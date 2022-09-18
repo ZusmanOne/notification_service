@@ -1,0 +1,47 @@
+version: '3.7'
+services:
+  db:
+    image: postgres:12.9
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - ./.env.db
+    ports:
+      - "${DB_PORT:-5432}:5432"
+
+
+  web:
+    build: .
+    command: bash -c "python manage.py migrate --noinput && python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/usr/src/app
+    ports:
+      - 8000:8000
+    depends_on:
+      - db
+    links:
+      - db:db
+    env_file:
+      - ./notification/.env
+
+  redis:
+    container_name: redis
+    image: redis:alpine
+    restart: unless-stopped
+
+  celery:
+    restart: always
+    build:
+      context: .
+    command: celery -A notification  worker -l INFO
+    volumes:
+      - ./app:/app
+    env_file:
+      - ./notification/.env
+    depends_on:
+      - db
+      - redis
+      - web
+
+volumes:
+  postgres_data:
