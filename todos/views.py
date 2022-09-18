@@ -7,7 +7,7 @@ from rest_framework.decorators import api_view
 from django.dispatch import receiver
 from django.db.models.signals import post_save
 from django.utils import timezone
-from .tasks import create_message
+from .tasks import create_message,send_message_openapi
 
 
 class ClienList(generics.ListCreateAPIView):
@@ -67,18 +67,12 @@ def send_message(distribution):
     if distribution.date_start >= now_time:
         create_message.apply_async((distribution.code_provider, distribution.tag, distribution.pk),
                                    eta=distribution.date_start, expires=distribution.date_finish)
+    send_message_openapi.delay(distribution.pk)
 
 
 @receiver(post_save, sender=Distribution)
 def create_distribution(sender, instance, created, **kwargs):
     if created:
-        print(instance.pk)
-        data = {}
         send_message(instance)
-        for mailing in instance.message.all():
-            for client in mailing.client.all():
-                data['phone_number']= client.phone_number
-                data['message_id'] = mailing.pk
-                data['text'] = instance.message
-        print(data)
+
 

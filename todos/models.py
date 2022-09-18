@@ -1,5 +1,6 @@
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
+from phonenumber_field.phonenumber import PhoneNumber
 import pytz
 
 
@@ -20,7 +21,6 @@ class Distribution(models.Model):
 
 class Client(models.Model):
     TIMEZONES = tuple(zip(pytz.all_timezones, pytz.all_timezones))
-
     phone_number = PhoneNumberField(verbose_name='Номер телефона',
                                     db_index=True,
                                     unique=True,
@@ -29,6 +29,10 @@ class Client(models.Model):
     tag = models.CharField(max_length=100,  verbose_name='тэг')
     timezone = models.CharField(max_length=32, choices=TIMEZONES,
                                 default='UTC', verbose_name='часовой пояс')
+
+    @property
+    def phone_number_e164(self):
+        return self.phone_number.as_e164
 
     def __str__(self):
         return f'CLient {self.phone_number} his tag {self.tag}'
