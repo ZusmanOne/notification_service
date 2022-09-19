@@ -7,7 +7,7 @@ from rest_framework.decorators import api_view
 from django.dispatch import receiver
 from django.db.models.signals import post_save
 from django.utils import timezone
-from .tasks import create_message,send_message_openapi
+from .tasks import create_message, send_message_openapi
 
 
 class ClienList(generics.ListCreateAPIView):
@@ -18,16 +18,6 @@ class ClienList(generics.ListCreateAPIView):
 class ClientDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Client.objects.all()
     serializer_class = ClientSerializer
-
-
-class DistributionList(generics.ListCreateAPIView):
-    queryset = Distribution.objects.all()
-    serializer_class = DistributionSerializer
-
-
-class DistributionDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Distribution.objects.all()
-    serializer_class = DistributionSerializer
 
 
 class DistributionViewSet(viewsets.ModelViewSet):
@@ -74,5 +64,3 @@ def send_message(distribution):
 def create_distribution(sender, instance, created, **kwargs):
     if created:
         send_message(instance)
-
-
