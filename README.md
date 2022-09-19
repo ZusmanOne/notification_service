@@ -66,7 +66,7 @@ python manage.py runserver
 ```
 celery -A notification  worker -l INFO
 ```
-```http://127.0.0.1:8000/``` - api проекта
+```http://127.0.0.1:8000/api``` - api проекта
 
 ```http://127.0.0.1:8000/api/clients/``` - клиенты
 
